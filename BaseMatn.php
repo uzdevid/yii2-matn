@@ -55,7 +55,7 @@ class BaseMatn extends Component {
     }
 
     protected function splitText(): array {
-        $sentences = preg_split('/(?<=[.?!])\s+/', $this->text);
+        $sentences = preg_split('/(?<=[.?!])/', $this->text);
         $chunks = [];
         $currentChunk = '';
 
@@ -66,7 +66,7 @@ class BaseMatn extends Component {
             } elseif (mb_strlen($currentChunk) == 0) {
                 $currentChunk = $sentence;
             } else {
-                $currentChunk .= ' ' . $sentence;
+                $currentChunk .= $sentence;
             }
         }
 

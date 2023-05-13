@@ -3,6 +3,7 @@
 namespace uzdevid\matn;
 
 use yii\base\Exception;
+use yii\helpers\Html;
 
 /**
  * @property string $language
@@ -20,9 +21,10 @@ class Suggestions extends BaseMatn {
         }
 
         $hasError = false;
+
         foreach ($this->splitText() as $chunk) {
             $raw = [
-                'text' => $chunk
+                'text' => Html::decode($chunk)
             ];
 
             $response = $this->curlExecute($this->url, $raw);
@@ -31,7 +33,7 @@ class Suggestions extends BaseMatn {
                 $hasError = true;
             }
 
-            $this->_suggestions = array_merge($response['data'], $this->suggestions);
+            $this->_suggestions = array_merge($this->_suggestions, $response['data']);
         }
 
         return $hasError;
@@ -43,8 +45,10 @@ class Suggestions extends BaseMatn {
 
     public function setText(string $text): static {
         $this->_text = strip_tags($text);
+        $this->_text = html_entity_decode($this->_text);
         $this->_text = preg_replace('/\s+/', ' ', $this->_text);
         $this->_text = preg_replace('/\s*\n\s*/', "\n", $this->_text);
+
         return $this;
     }
 
