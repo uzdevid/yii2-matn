@@ -14,20 +14,52 @@ class Correct extends BaseMatn {
     private array $_errors = [];
 
     public string $method = '/correct';
+    public int $maxChars = 255;
 
     public function isCorrect(): bool {
         if (empty($this->text)) {
             throw new Exception('Text is required');
         }
 
-        $raw = [
-            'text' => $this->text
-        ];
+        $hasError = false;
+        foreach ($this->splitText() as $chunk) {
+            $raw = [
+                'text' => $chunk
+            ];
 
-        $response = $this->curlExecute($this->url, $raw);
+            $response = $this->curlExecute($this->url, $raw);
 
-        $this->_errors = $response['data'];
-        return !$response['errors'];
+            if ($response['errors']) {
+                $hasError = true;
+            }
+
+            $this->_errors = array_merge($response['data'], $this->_errors);
+        }
+
+        return $hasError;
+    }
+
+    protected function splitText(): array {
+        $sentences = preg_split('/(?<=[.?!])\s+/', $this->text);
+        $chunks = [];
+        $currentChunk = '';
+
+        foreach ($sentences as $sentence) {
+            if (mb_strlen($currentChunk . $sentence) + 1 > $this->maxChars) {
+                $chunks[] = $currentChunk;
+                $currentChunk = $sentence;
+            } elseif (mb_strlen($currentChunk) == 0) {
+                $currentChunk = $sentence;
+            } else {
+                $currentChunk .= ' ' . $sentence;
+            }
+        }
+
+        if (!empty($currentChunk)) {
+            $chunks[] = $currentChunk;
+        }
+
+        return $chunks;
     }
 
     public function getText(): string {
