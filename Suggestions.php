@@ -12,7 +12,6 @@ use yii\base\Exception;
 class Suggestions extends BaseMatn {
     private string $_text;
     private array $_suggestions = [];
-
     public string $method = '/suggestions';
 
     public function isCorrect(): bool {
@@ -20,14 +19,22 @@ class Suggestions extends BaseMatn {
             throw new Exception('Text is required');
         }
 
-        $raw = [
-            'text' => $this->text
-        ];
+        $hasError = false;
+        foreach ($this->splitText() as $chunk) {
+            $raw = [
+                'text' => $chunk
+            ];
 
-        $response = $this->curlExecute($this->url, $raw);
+            $response = $this->curlExecute($this->url, $raw);
 
-        $this->_suggestions = $response['data'];
-        return !$response['errors'];
+            if ($response['errors']) {
+                $hasError = true;
+            }
+
+            $this->_suggestions = array_merge($response['data'], $this->suggestions);
+        }
+
+        return $hasError;
     }
 
     public function getText(): string {
@@ -36,6 +43,8 @@ class Suggestions extends BaseMatn {
 
     public function setText(string $text): static {
         $this->_text = strip_tags($text);
+        $this->_text = preg_replace('/\s+/', ' ', $this->_text);
+        $this->_text = preg_replace('/\s*\n\s*/', "\n", $this->_text);
         return $this;
     }
 

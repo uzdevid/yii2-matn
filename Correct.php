@@ -2,8 +2,6 @@
 
 namespace uzdevid\matn;
 
-use yii\base\Exception;
-
 /**
  * @property string $language
  * @property string $text
@@ -12,9 +10,7 @@ use yii\base\Exception;
 class Correct extends BaseMatn {
     private string $_text;
     private array $_errors = [];
-
     public string $method = '/correct';
-    public int $maxChars = 255;
 
     public function isCorrect(): bool {
         if (empty($this->text)) {
@@ -39,32 +35,10 @@ class Correct extends BaseMatn {
         return $hasError;
     }
 
-    protected function splitText(): array {
-        $sentences = preg_split('/(?<=[.?!])\s+/', $this->text);
-        $chunks = [];
-        $currentChunk = '';
-
-        foreach ($sentences as $sentence) {
-            if (mb_strlen($currentChunk . $sentence) + 1 > $this->maxChars) {
-                $chunks[] = $currentChunk;
-                $currentChunk = $sentence;
-            } elseif (mb_strlen($currentChunk) == 0) {
-                $currentChunk = $sentence;
-            } else {
-                $currentChunk .= ' ' . $sentence;
-            }
-        }
-
-        if (!empty($currentChunk)) {
-            $chunks[] = $currentChunk;
-        }
-
-        return $chunks;
-    }
-
     public function getText(): string {
         return $this->_text;
     }
+
 
     public function setText(string $text): static {
         $this->_text = strip_tags($text);

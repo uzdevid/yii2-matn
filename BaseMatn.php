@@ -11,11 +11,9 @@ use yii\base\Exception;
  */
 class BaseMatn extends Component {
     public string $endpointUrl = 'https://matn.uz/api';
-
     public string $version = '/v1';
-
     public string $method;
-
+    public int $maxChars = 255;
     private string $_token = '';
 
     public function getToken(): string {
@@ -54,5 +52,28 @@ class BaseMatn extends Component {
         curl_close($curl);
 
         return json_decode($response, true);
+    }
+
+    protected function splitText(): array {
+        $sentences = preg_split('/(?<=[.?!])\s+/', $this->text);
+        $chunks = [];
+        $currentChunk = '';
+
+        foreach ($sentences as $sentence) {
+            if (mb_strlen($currentChunk . $sentence) + 1 > $this->maxChars) {
+                $chunks[] = $currentChunk;
+                $currentChunk = $sentence;
+            } elseif (mb_strlen($currentChunk) == 0) {
+                $currentChunk = $sentence;
+            } else {
+                $currentChunk .= ' ' . $sentence;
+            }
+        }
+
+        if (!empty($currentChunk)) {
+            $chunks[] = $currentChunk;
+        }
+
+        return $chunks;
     }
 }
