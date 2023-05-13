@@ -1,6 +1,6 @@
 <?php
 
-namespace uzdevid\korrektor;
+namespace uzdevid\matn;
 
 use yii\base\Exception;
 
