@@ -36,6 +36,8 @@ class Correct extends BaseMatn {
 
     public function setText(string $text): static {
         $this->_text = strip_tags($text);
+        $this->_text = preg_replace('/\s+/', ' ', $this->_text);
+        $this->_text = preg_replace('/\s*\n\s*/', "\n", $this->_text);
         return $this;
     }
 
